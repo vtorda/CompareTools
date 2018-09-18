@@ -2,7 +2,9 @@
 
 export(DolloImport)
 export(LadderizeTree)
+export(retrieve_event)
 import(ape)
 import(plyr)
 import(readr)
 import(stringr)
+import(tidyr)

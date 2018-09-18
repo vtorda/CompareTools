@@ -4,8 +4,6 @@
 #'
 #' @param tree
 #' @param files
-#' @param path
-#' @param pattern
 #' @param partitioning
 #' @param groups
 #'
@@ -16,15 +14,15 @@
 #' @examples
 #'
 #'
-files <- file_path
-tree <- fungi_tree_lad
-group_path <- system.file("extdata", "groups.txt", package = "CompareTools")
-groups <- group_path
-groups <- read_tsv(group_path)
-partitioning <- TRUE
+# files <- file_path
+# tree <- fungi_tree_lad
+# group_path <- system.file("extdata", "groups.txt", package = "CompareTools")
+# groups <- group_path
+# groups <- read_tsv(group_path)
+# partitioning <- TRUE
 DolloImport <- function(tree, files = NULL, partitioning = FALSE, groups = NULL){
     if(is.null(files)){
-      warning(paste0("You need to give a file name!")) # TODO stopra atirni
+      stop("You need to give a file name!") # TODO stopra atirni
     }
     raw_file <- read_lines(files)
     rows_needed <- c(which(str_detect(raw_file, "GAIN") == TRUE), which(str_detect(raw_file, "LOSSES") == TRUE))
