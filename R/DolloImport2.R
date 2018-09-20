@@ -1,4 +1,4 @@
-#' DolloImport
+#' DolloImport2
 #'
 #' Import data from compare analysis
 #'
@@ -15,7 +15,7 @@
 #' @examples
 #'
 #'
-DolloImport <- function(tree, files = NULL, partitioning = FALSE, groups = NULL, part_name = NULL){
+DolloImport2 <- function(tree, files = NULL, partitioning = FALSE, groups = NULL, part_name = NULL){
     if(is.null(files)){
       stop("You need to give a file name!")
       }

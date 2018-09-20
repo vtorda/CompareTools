@@ -12,13 +12,13 @@
 #######
 ## majd meg beepiteni hogy a part_name-eket csekkolja, szerepel-e mar ez a nev a listaba
 #######
-#compare <- compare_ls
+# compare <- compare_ls
 # group_path <- system.file("extdata", "groups.txt", package = "CompareTools")
 # groups <- c(group_path, "bla")
 # groups <- read_tsv(group_path)
 # part_title <- "test"
-# tehat akkor eloszor
-#part_name <- "probe"
+# # tehat akkor eloszor
+# part_name <- "probe"
 # compare <- probe1
 # partitioning <- TRUE
 # groups <- groups
@@ -31,8 +31,8 @@ retrieve_event <- function(compare, partitioning = FALSE, groups = NULL, part_na
   cluster_names <- na.omit(unique(str_split(unique(unlist(str_split(raw_data, pattern = " "))), pattern = "/", simplify = TRUE)[,1]))
   all_cl_sep <- vector("list", length = length(cluster_names))
   for(i in seq_along(cluster_names)){
-    gains <- sapply(raw_data[,1], function(x) str_count(x, paste0(cluster_names[i], "/\\d")), USE.NAMES = FALSE)
-    losses <- sapply(raw_data[,2], function(x) str_count(x, paste0(cluster_names[i], "/\\d")), USE.NAMES = FALSE)
+    gains <- str_count(raw_data[,1], paste0(cluster_names[i], "/\\d"))
+    losses <- str_count(raw_data[,2], paste0(cluster_names[i], "/\\d"))
     gains[is.na(gains)] <- 0
     losses[is.na(losses)] <- 0
     all_cl_sep[[i]] <- matrix(c(gains, losses), nrow = node_n, ncol = 2)
@@ -59,14 +59,21 @@ retrieve_event <- function(compare, partitioning = FALSE, groups = NULL, part_na
   i <- NULL
 # calculate the commulative gains and losses
 #most meg van a path akkor mindengyiket ki kell bontogatni es osszeadni a dolgokat
+  j <- 1
+  k <- 1
+  node_ls <- vector("list", node_n)
+  for(j in 1:node_n){
+    path_temp <- path[j]
+    node_ls[[j]] <- as.numeric(str_split(path_temp, ";", simplify = TRUE)[1,])
+  }
+
+
   for(k in 1:length(all_cl_sep)){
     copy_num1 <- vector(mode = "numeric", length = node_n)
     copy_num2 <- vector(mode = "numeric", length = node_n)
     for(j in 1:node_n){
-      path_temp <- path[j]
-      v <- as.numeric(unlist(str_split(path_temp, ";")))
-      copy_num1[j] <- sum(all_cl_sep[[k]][v, 1])
-      copy_num2[j] <- sum(all_cl_sep[[k]][v, 2])
+      copy_num1[j] <- sum(all_cl_sep[[k]][node_ls[[j]], 1])
+      copy_num2[j] <- sum(all_cl_sep[[k]][node_ls[[j]], 2])
     }
     all_cl_sep[[k]] <- cbind(all_cl_sep[[k]], copy_num1)
     all_cl_sep[[k]] <- cbind(all_cl_sep[[k]], copy_num2)
@@ -75,7 +82,7 @@ retrieve_event <- function(compare, partitioning = FALSE, groups = NULL, part_na
   #ezek utan mar csak ossze kell addni az adott matrixokat es meg lesz a particionalt matrix
   if(partitioning){
     if(is.null(groups)){
-      compare_ls2 <- c(compare[1: (length(compare) - 1)], list(group_cl_sep), compare["raw_data"])
+      compare_ls2 <- c(compare[1: (length(compare) - 1)], list(all_cl_sep), compare["raw_data"])
       names(compare_ls2) <- c(names(compare)[1: (length(compare) - 1)], part_name, "raw_data")
       return(compare_ls2)
     }else{
@@ -116,11 +123,19 @@ retrieve_event <- function(compare, partitioning = FALSE, groups = NULL, part_na
   }else{
     all_cl <- list()
     all_cl[[1]] <- Reduce("+", all_cl_sep)
-    compare_ls2 <- c(compare[1: (length(compare) - 1)], list(group_cl_sep), compare["raw_data"])
+    compare_ls2 <- c(compare[1: (length(compare) - 1)], list(all_cl), compare["raw_data"])
     names(compare_ls2) <- c(names(compare)[1: (length(compare) - 1)], part_name, "raw_data")
     return(compare_ls2)
   }
 }
+# as.numeric(str_split(path_temp, ";", simplify = TRUE)[1,])
 # probe1 <- retrieve_event(compare_ls)
 # probe2 <- retrieve_event(compare_ls, partitioning = TRUE)
 # probe3 <- retrieve_event(compare_ls, partitioning = TRUE, groups = groups)
+# str_count(raw_data[,1], paste0(cluster_names[1], "/\\d"))
+# sapply(raw_data[,1], function(x) str_count(x, paste0(cluster_names[1], "/\\d")), USE.NAMES = FALSE)
+# gains <- sapply(raw_data[,1], function(x) str_count(x, paste0(cluster_names[i], "/\\d")), USE.NAMES = FALSE)
+# losses <- sapply(raw_data[,2], function(x) str_count(x, paste0(cluster_names[i], "/\\d")), USE.NAMES = FALSE)
+# gains[is.na(gains)] <- 0
+# losses[is.na(losses)] <- 0
+# all_cl_sep[[i]] <- matrix(c(gains, losses), nrow = node_n, ncol = 2)

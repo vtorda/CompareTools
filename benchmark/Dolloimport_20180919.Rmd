@@ -1,0 +1,151 @@
+---
+title: "DolloImport2_20180919"
+author: "Torda"
+date: "September 19, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ape)
+library(plyr)
+library(tidyr)
+library(stringr)
+library(readr)
+library(profvis)
+library(microbenchmark)
+```
+
+```{r}
+file_path <- system.file("extdata", "Dolloout", package = "CompareTools")
+files <- file_path
+tree <- fungi_tree_lad
+group_path <- system.file("extdata", "groups.txt", package = "CompareTools")
+groups <- group_path
+groups <- read_tsv(group_path)
+# groups <- NULL
+# partitioning <- TRUE
+# part_name <- "probe"
+```
+
+```{r}
+probe1 <- DolloImport2(tree = tree, partitioning = TRUE, files = files, part_name = "every")
+```
+
+```{r}
+microbenchmark(DolloImport2(tree = tree, partitioning = TRUE, files = files, part_name = "every"), times = 10)
+```
+
+Tehat mean 1.34 sec volt a futasa a kodnak....
+
+```{r}
+profvis(DolloImport2(tree = tree, partitioning = TRUE, files = files, part_name = "every"))
+```
+
+profvis alapjan 1360 ms-ba telik az eges es ebbol 1310 a retrieve event fuggveny
+a retrieve fuggvenyen belul 110 + 70 ms volt az ains <- str_count(raw_data[,1], paste0(cluster_names[i], "/\\d")) es a losses <- str_count(raw_data[,2], paste0(cluster_names[i], "/\\d")) sorok
+
+maga egy sor 1000 ms: 
+
+for(j in 1:node_n){			
+      path_temp <- path[j]			
+      v <- as.numeric(unlist(str_split(path_temp, ";")))			
+      copy_num1[j] <- sum(all_cl_sep[[k]][v, 1])			
+      copy_num2[j] <- sum(all_cl_sep[[k]][v, 2])			
+    }
+    
+ezen belul is a v <- as.numeric(unlist(str_split(path_temp, ";")))	sor a leghosszabb...
+
+akkor ezt a sort lecserelem erre:
+
+v <- as.numeric(str_split(path_temp, ";", simplify = TRUE)[1,])
+
+
+```{r}
+microbenchmark(DolloImport2(tree = tree, partitioning = TRUE, files = files, part_name = "every"), times = 10)
+```
+
+na most atlagba 1.36...
+
+
+```{r}
+profvis(DolloImport2(tree = tree, partitioning = TRUE, files = files, part_name = "every"))
+```
+
+ugyan ott hasonlo ido...ez olyan volt mint halottnak a csok..
+
+ok akkor most a belso loopbol kivettem a str kibontogatast:
+
+  node_ls <- vector("list", node_n)
+  for(j in 1:node_n){
+    path_temp <- path[j]
+    node_ls[[j]] <- as.numeric(str_split(path_temp, ";", simplify = TRUE)[1,])
+  }
+
+
+  for(k in 1:length(all_cl_sep)){
+    copy_num1 <- vector(mode = "numeric", length = node_n)
+    copy_num2 <- vector(mode = "numeric", length = node_n)
+    for(j in 1:node_n){
+      copy_num1[j] <- sum(all_cl_sep[[k]][node_ls[[j]], 1])
+      copy_num2[j] <- sum(all_cl_sep[[k]][node_ls[[j]], 2])
+    }
+    all_cl_sep[[k]] <- cbind(all_cl_sep[[k]], copy_num1)
+    all_cl_sep[[k]] <- cbind(all_cl_sep[[k]], copy_num2)
+    all_cl_sep[[k]] <- unname(all_cl_sep[[k]])
+  }
+  
+
+```{r}
+microbenchmark(DolloImport2(tree = tree, partitioning = TRUE, files = files, part_name = "every"), times = 10)
+```
+
+hoppa javult! most mar csak 384 ms!! 3x gyorsabb lett!
+
+
+```{r}
+profvis(DolloImport2(tree = tree, partitioning = TRUE, files = files, part_name = "every"))
+```
+
+Na akkor nezzuk meg hogy a zsolttol kapott nagyobb adatsor milyen gyorsan megy le:
+
+```{r}
+tree <- read.tree("~/Documents/MUNKA/PhD/Enikonek/zsolttol/species_bigdata.tree")
+tree <- LadderizeTree(tree = tree)
+microbenchmark(DolloImport2(tree = tree, partitioning = TRUE, files = "~/Documents/MUNKA/PhD/Enikonek/zsolttol/Dolloout_bigdata", part_name = "every"), times = 10)
+```
+
+Ez mar sokkal rosszabbul hangzik  mert 34 s az atlagos futasi ido......
+
+
+```{r}
+profvis(DolloImport2(tree = tree, partitioning = TRUE, files = "~/Documents/MUNKA/PhD/Enikonek/zsolttol/Dolloout_bigdata", part_name = "every"))
+```
+
+na profvis alapjan latszik hogy a kodban ket resz van ami bottleneck lehet es az egyik fa nagysag fuggo a masik pedig cluster fuggo:
+
+Ez a resz a fa nagysagatol fuggoen fog lassabban vagy gyorsabban futni:
+
+	  for(k in 1:length(all_cl_sep)){			
+    copy_num1 <- vector(mode = "numeric", length = node_n)			
+    copy_num2 <- vector(mode = "numeric", length = node_n)			
+    for(j in 1:node_n){			
+      copy_num1[j] <- sum(all_cl_sep[[k]][node_ls[[j]], 1])			
+      copy_num2[j] <- sum(all_cl_sep[[k]][node_ls[[j]], 2])			
+    }
+    
+    
+Ez a resz pedig a clusterek szamatol fogguen fog lassabban vagy gyorsabban futni.
+
+  cluster_names <- na.omit(unique(str_split(unique(unlist(str_split(raw_data, pattern = " "))), pattern = "/", simplify = TRUE)[,1]))			
+  all_cl_sep <- vector("list", length = length(cluster_names))			
+  for(i in seq_along(cluster_names)){			
+    gains <- str_count(raw_data[,1], paste0(cluster_names[i], "/\\d"))			
+    losses <- str_count(raw_data[,2], paste0(cluster_names[i], "/\\d"))			
+    gains[is.na(gains)] <- 0			
+    losses[is.na(losses)] <- 0			
+    all_cl_sep[[i]] <- matrix(c(gains, losses), nrow = node_n, ncol = 2)			
+  }
