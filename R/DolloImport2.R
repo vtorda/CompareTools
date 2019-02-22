@@ -2,22 +2,23 @@
 #'
 #' Import data from compare analysis
 #'
-#' @param tree
-#' @param files
+#' @param tree a phylo object describing the species tree used in the COMPARE analysis
+#' @param files a character containing the path with the name of the the output file from the step Dollo parsimony of the COMPARE analysis.
 #' @param partitioning
 #' @param groups
 #' @param part_name
 #'
-#' @return this function returns a \code{list} object with...
+#' @return this function returns a \code{list} object with the following elements: tree, Compare matrices and raw_data. raw data is a matrix with two columns (1 = gains, 2 = losses) and as many rows as many nodes + tips the species tree has. These are aligned.
 #' @export
 #' @import ape readr plyr stringr tidyr
 #'
 #' @examples
 #'
 #'
-DolloImport2 <- function(tree, files = NULL, partitioning = FALSE, groups = NULL, part_name = NULL){
+DolloImport2 <- function(tree, files = NULL, partitioning = FALSE, groups = NULL,
+                         part_name = NULL){
     if(is.null(files)){
-      stop("You need to give a file name!")
+      stop("You need to give a path with the file name!")
       }
     #import raw data
     raw_file <- read_lines(files)
@@ -39,9 +40,7 @@ DolloImport2 <- function(tree, files = NULL, partitioning = FALSE, groups = NULL
     dollo_species <- unique(unlist(sapply(node_df2$species, function(x) str_split(x, " "))))
     if(any(dollo_species %in% tree$tip.label == FALSE)){
       wrong_names_d <- which(dollo_species %in% tree$tip.label == FALSE)
-      warning(paste0("Species names don't match!\t", "Species in Dollo file:\t", dollo_species[wrong_names]))
-    }else{
-      warning(paste0("Species names match!"))
+      warning(paste0("The following species names don't match!\t", "Species in Dollo file:\t", dollo_species[wrong_names]))
     }
     node_df2$tree_nodes <- rep(NA, nrow(node_df2))
     for(i in 1:nrow(node_df2)){
@@ -69,7 +68,7 @@ DolloImport2 <- function(tree, files = NULL, partitioning = FALSE, groups = NULL
     compare_ls[[2]] <- raw_matrix
     names(compare_ls) <- c("tree", "raw_data")
     # use the retrieve_event function
-    events_ls <- retrieve_event(compare = compare_ls, partitioning = partitioning, groups = groups, part_name = part_name)
+    events_ls <- retrieve_event2(compare = compare_ls, partitioning = partitioning, groups = groups, part_name = part_name)
     return(events_ls)
 }
 # file_path <- system.file("extdata", "Dolloout", package = "CompareTools")

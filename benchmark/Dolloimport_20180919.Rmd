@@ -22,17 +22,21 @@ library(microbenchmark)
 ```{r}
 file_path <- system.file("extdata", "Dolloout", package = "CompareTools")
 files <- file_path
-tree <- fungi_tree_lad
+tree_path <- system.file("extdata", "71g_species.tree", package = "CompareTools")
+tree <- read.tree(tree_path)
 group_path <- system.file("extdata", "groups.txt", package = "CompareTools")
 groups <- group_path
-groups <- read_tsv(group_path)
+#groups <- read_tsv(group_path)
 # groups <- NULL
 # partitioning <- TRUE
 # part_name <- "probe"
 ```
 
 ```{r}
-probe1 <- DolloImport2(tree = tree, partitioning = TRUE, files = files, part_name = "every")
+probe1 <- DolloImport2(tree = tree, partitioning = FALSE, files = files, part_name = "every")
+d <- probe1$raw_data
+a <- probe1$every$all_cluster
+probe2 <- retrieve_event2(probe1, partitioning = TRUE, part_name = "all_cl")
 ```
 
 ```{r}
@@ -42,7 +46,7 @@ microbenchmark(DolloImport2(tree = tree, partitioning = TRUE, files = files, par
 Tehat mean 1.34 sec volt a futasa a kodnak....
 
 ```{r}
-profvis(DolloImport2(tree = tree, partitioning = TRUE, files = files, part_name = "every"))
+profvis(DolloImport2(tree = tree, partitioning = FALSE, files = files, part_name = "all"))
 ```
 
 profvis alapjan 1360 ms-ba telik az eges es ebbol 1310 a retrieve event fuggveny
@@ -112,6 +116,7 @@ profvis(DolloImport2(tree = tree, partitioning = TRUE, files = files, part_name 
 
 Na akkor nezzuk meg hogy a zsolttol kapott nagyobb adatsor milyen gyorsan megy le:
 
+
 ```{r}
 tree <- read.tree("~/Documents/MUNKA/PhD/Enikonek/zsolttol/species_bigdata.tree")
 tree <- LadderizeTree(tree = tree)
@@ -149,3 +154,7 @@ Ez a resz pedig a clusterek szamatol fogguen fog lassabban vagy gyorsabban futni
     losses[is.na(losses)] <- 0			
     all_cl_sep[[i]] <- matrix(c(gains, losses), nrow = node_n, ncol = 2)			
   }
+```{r}
+probe2 <- DolloImport2(tree = tree, partitioning = TRUE, files = "~/Documents/MUNKA/PhD/Enikonek/zsolttol/Dolloout_bigdata", part_name = "every")
+```
+

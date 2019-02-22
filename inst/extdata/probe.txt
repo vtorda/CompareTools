@@ -1,0 +1,20 @@
+For your reference, here is the list of internal nodes of the tree and the descendants for each
+node1	 t4
+node2	 t9
+node3	 t6
+node4	 t3
+node5	 t1
+node6	 t7
+node7	 t10
+node8	 t5
+node9	 t2
+node10	 t8
+node11	 t4 t9 t6 t3 t1 t7 t10 t5 t2 t8
+node12	 t4 t9 t6 t3 t1 t7 t10 t5 t2
+node13	 t4 t9 t6 t3
+node14	 t4 t9 t6
+node15	 t4 t9
+node16	 t1 t7 t10 t5 t2
+node17	 t7 t10 t5 t2
+node18	 t10 t5 t2
+node19	 t10 t5

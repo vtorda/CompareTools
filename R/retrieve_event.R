@@ -1,34 +1,30 @@
 #' Retrieve event
 #'
-#' @param compare
-#' @param partitioning
-#' @param groups
+#' @param compare a compare object
+#' @param partitioning logical, does the clusters handled separately (TRUE) or all together (FALSE).
+#'     If TRUE and no groups is given, all clusters will be handeled separately.
+#'     If a group file is given clusteres will be grouped according to that file.
+#' @param groups a Tab Separated file containing the cluster names and their position in predefined groups
 #' @param part_name
 #'
 #' @return this function returns a compare object with additional event matrices
 #' @export
+#' @import ape readr plyr stringr tidyr
 #'
 #' @examples
 #######
 ## majd meg beepiteni hogy a part_name-eket csekkolja, szerepel-e mar ez a nev a listaba
 #######
-# compare <- compare_ls
-# group_path <- system.file("extdata", "groups.txt", package = "CompareTools")
-# groups <- c(group_path, "bla")
-# groups <- read_tsv(group_path)
-# part_title <- "test"
-# # tehat akkor eloszor
-# part_name <- "probe"
-# compare <- probe1
-# partitioning <- TRUE
-# groups <- groups
-# part_name <- "grouping1"
-retrieve_event <- function(compare, partitioning = FALSE, groups = NULL, part_name = NULL){
+
+retrieve_event <- function(compare, partitioning = FALSE, groups = NULL,
+                           part_name = NULL){
   raw_data <- compare[["raw_data"]]
   tree <- compare$tree
   node_n <- nrow(raw_data)
   #first retrieve all events (pattern = " ") then split it to the clusters and orthogroups (pattern "/")
-  cluster_names <- na.omit(unique(str_split(unique(unlist(str_split(raw_data, pattern = " "))), pattern = "/", simplify = TRUE)[,1]))
+  cluster_names <- na.omit(unique(str_split(unique(unlist(str_split(raw_data,
+                                                                    pattern = " "))),
+                                            pattern = "/", simplify = TRUE)[,1]))
   all_cl_sep <- vector("list", length = length(cluster_names))
   for(i in seq_along(cluster_names)){
     gains <- str_count(raw_data[,1], paste0(cluster_names[i], "/\\d"))
@@ -82,22 +78,24 @@ retrieve_event <- function(compare, partitioning = FALSE, groups = NULL, part_na
   #ezek utan mar csak ossze kell addni az adott matrixokat es meg lesz a particionalt matrix
   if(partitioning){
     if(is.null(groups)){
-      compare_ls2 <- c(compare[1: (length(compare) - 1)], list(all_cl_sep), compare["raw_data"])
-      names(compare_ls2) <- c(names(compare)[1: (length(compare) - 1)], part_name, "raw_data")
+      compare_ls2 <- c(compare[1:(length(compare) - 1)], list(all_cl_sep),
+                       compare["raw_data"])
+      names(compare_ls2) <- c(names(compare)[1: (length(compare) - 1)],
+                              part_name, "raw_data")
       return(compare_ls2)
     }else{
       ################################
-      ######write a warning if the group file is not in the correct form########
+      ######write a warning if the group file is not in the correct form, dim check########
       ##### does it contain every cluster?
       ################################
-      if(is.character(groups) & length(groups) > 1){
+      if(is.character(groups) & length(groups) > 1){ #### here the states should be defined more precisely!!!
         stop("wrongly defined group path\nPlease give a single character with the absolute path of the group file!")
       }else{
         if(is.character(groups) & length(groups) == 1){
           groups <- read_tsv(groups)
         }
         if(!is.data.frame(groups)){
-          stop("provide a data.frame object")
+          stop("Provide a Tab Separated Value (TSV) file in the right form. See man page")
         }else{
           ###
           ### hogy lehet hogy a groups file-ban nem az osszes cluster nev szerepel? mig a cun van van 350!
@@ -115,16 +113,20 @@ retrieve_event <- function(compare, partitioning = FALSE, groups = NULL, part_na
       }
       names(group_cl_sep) <- group_names
       #length(group_cl_sep)
-      compare_ls2 <- c(compare[1: (length(compare) - 1)], list(group_cl_sep), compare["raw_data"])
-      names(compare_ls2) <- c(names(compare)[1: (length(compare) - 1)], part_name, "raw_data")
+      compare_ls2 <- c(compare[1: (length(compare) - 1)], list(group_cl_sep),
+                       compare["raw_data"])
+      names(compare_ls2) <- c(names(compare)[1: (length(compare) - 1)],
+                              part_name, "raw_data")
       return(compare_ls2)
     }
 
   }else{
     all_cl <- list()
     all_cl[[1]] <- Reduce("+", all_cl_sep)
-    compare_ls2 <- c(compare[1: (length(compare) - 1)], list(all_cl), compare["raw_data"])
-    names(compare_ls2) <- c(names(compare)[1: (length(compare) - 1)], part_name, "raw_data")
+    compare_ls2 <- c(compare[1: (length(compare) - 1)], list(all_cl),
+                     compare["raw_data"])
+    names(compare_ls2) <- c(names(compare)[1: (length(compare) - 1)],
+                            part_name, "raw_data")
     return(compare_ls2)
   }
 }

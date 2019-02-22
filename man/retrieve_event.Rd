@@ -8,6 +8,14 @@ retrieve_event(compare, partitioning = FALSE, groups = NULL,
   part_name = NULL)
 }
 \arguments{
+\item{compare}{a compare object}
+
+\item{partitioning}{logical, does the clusters handled separately (TRUE) or all together (FALSE).
+If TRUE and no groups is given, all clusters will be handeled separately.
+If a group file is given clusteres will be grouped according to that file.}
+
+\item{groups}{a Tab Separated file containing the cluster names and their position in predefined groups}
+
 \item{part_name}{}
 }
 \value{

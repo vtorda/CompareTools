@@ -8,10 +8,14 @@ DolloImport2(tree, files = NULL, partitioning = FALSE, groups = NULL,
   part_name = NULL)
 }
 \arguments{
+\item{tree}{a phylo object describing the species tree used in the COMPARE analysis}
+
+\item{files}{a character containing the path with the name of the the output file from the step Dollo parsimony of the COMPARE analysis.}
+
 \item{part_name}{}
 }
 \value{
-this function returns a \code{list} object with...
+this function returns a \code{list} object with the following elements: tree, Compare matrices and raw_data. raw data is a matrix with two columns (1 = gains, 2 = losses) and as many rows as many nodes + tips the species tree has. These are aligned.
 }
 \description{
 Import data from compare analysis

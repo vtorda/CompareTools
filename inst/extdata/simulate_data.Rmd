@@ -1,0 +1,122 @@
+---
+title: "Genereate_Compare_output"
+author: "Torda"
+date: "February 1, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(phytools)
+library(ape)
+library(truncnorm)
+library(stringr)
+library(readr)
+library(plyr)
+```
+
+A lenyeg hogy le kene generalni kulonbozo meretu fakat kulonbozo meretu cluster nagysagokkal
+
+pl 10, 100, 1000, 10000 fajszammal
+
+aztan 100, 500, 1000 clusterrel
+
+a clusterek ortholog csoportjai pedig egy tuncated normal eloszlas mellett kene kiosztani
+
+```{r}
+trees <- pbtree(n = 100)
+is.ultrametric(trees)
+tree <- rtree(100)
+is.ultrametric(tree)
+plot(tree)
+is.rooted(tree)
+trees <- rmtree(10, 100)
+```
+
+```{r}
+n <- rnorm(n = 100, mean = 50, sd = 10)
+hist(round(n))
+min(n)
+n <- rtruncnorm(100, a = 0, mean = 50, sd = 40)
+hist(round(n))
+
+length(sample(1:1000, size = 20, prob = 1- pexp(1:1000)))
+hist((1- pexp(1:1000, rate = 0.1)))
+hist(round(sample(1:1000, size = 10000, replace = TRUE, prob = 1- pexp(1:1000, rate = 0.01))))
+any(round(sample(1:1000, size = 10000, replace = TRUE, prob = 1- pexp(1:1000, rate = 0.01))) == 0)
+min(round(sample(1:1000000, size = 100000, replace = TRUE, prob = 1- pexp(1:1000000, rate = 0.01))))
+max(round(sample(1:1000000, size = 100000, replace = TRUE, prob = 1- pexp(1:1000000, rate = 0.00001))))
+max(round(sample(1:1000, size = 10000, replace = TRUE, prob = 1- pexp(1:1000, rate = 0.00001))))
+hist(round(sample(1:1000, size = 10000, replace = TRUE, prob = 1- pexp(1:1000, rate = 0.00001))))
+
+1 / 1000000
+0.00001
+
+plot_ortho_hist <- function(ortho_n, cl_num){
+  hist(round(sample(1:ortho_n, size = cl_num, replace = TRUE, prob = 1- pexp(1:ortho_n, rate = 1 / (ortho_n / 10)))))
+}
+plot_ortho_hist(10000, 100)
+plot_ortho_hist(100000, 100)
+plot_ortho_hist(1000000, 100)
+```
+
+generateing tree file and dolloout species iden
+
+```{r}
+spec_num <- 10
+tree <- rtree(spec_num)
+nodes <- tree$Nnode + spec_num
+species_df <- data.frame(nodes = 1:nodes, species = c(tree$tip.label, sapply((spec_num + 1):nodes, function(x) str_c(extract.clade(tree, x)$tip.label, collapse = " "))), stringsAsFactors = FALSE)
+sink(file = "probe.txt")
+cat("For your reference, here is the list of internal nodes of the tree and the descendants for each\n")
+for(i in 1:nrow(species_df)){
+  cat(paste0("node", species_df[i,1]), "\t ", species_df[i,2], "\n", sep = "")
+}
+sink()
+
+```
+
+
+generate cluster / ortholog data frame
+
+```{r}
+ortho_dist <- function(ortho_n, cl_num){
+  round(sample(1:ortho_n, size = cl_num, replace = TRUE, prob = 1- pexp(1:ortho_n, rate = 1 / (ortho_n / 1000))))
+}
+
+
+cl_num <- 10000000
+ortho_upper <- 1000000
+n <- ortho_dist(ortho_n = ortho_upper, cl_num = cl_num)
+cl_df <- data.frame(clusters = 1:cl_num, ortho_n = n)
+sum(cl_df$ortho_n)
+max(cl_df$ortho_n)
+```
+
+check a real data,
+
+```{r}
+library(CompareTools)
+```
+
+```{r}
+eni_tree <- read.tree("~/Documents/MUNKA/PhD/CompareTools/inst/extdata/71g_species.tree")
+files <- "~/Documents/MUNKA/PhD/CompareTools/inst/extdata/Dolloout_GW_all"  
+comp <- DolloImport2(tree = eni_tree, files = files, partitioning = FALSE, part_name = "all")
+df <- comp$all$all_cluster
+sum(df[,2]) / sum(df[,1])
+sum(df[,1])
+comp2 <- DolloImport2(tree = eni_tree, files = files, partitioning = TRUE, part_name = "every")
+length(comp2$every)
+gain <- sapply(comp2$every, function(x) sum(x[,1]))
+hist(gain)
+summary(gain)
+```
+
+tehat 144961 cluster eseten
+max 49541 otho van egy clusterban, min 1, median 1. mean 13.18 3rd Qu. 2.
+
+
