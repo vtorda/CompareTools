@@ -5,8 +5,8 @@
 \title{PlotEvent}
 \usage{
 PlotEvent(compare, dataset = NULL, stat = NULL, data = NULL,
-  cladogram = FALSE, sizemeth = c("standard", "comparable"),
-  comp.size = c(0, 1000), size = 1, node_pch_opt, tip_pch_opt,
+  cladogram = FALSE, sizemeth = c("standard", "comparable", "log"),
+  comp.size = c(0, 1000), base, size = 1, node_pch_opt, tip_pch_opt,
   node_text_opt, tip_text_opt, ...)
 }
 \arguments{
