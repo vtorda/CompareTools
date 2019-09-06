@@ -56,7 +56,7 @@ if(partitioning){
       all_cl_sep[[i]] <- matrix(c(gains, losses), nrow = node_n, ncol = 2)
      }
     names(all_cl_sep) <- cluster_names
-    # calculate the commulative values
+    # calculate the cummulative values
     for(k in 1:length(all_cl_sep)){
       copy_num1 <- vector(mode = "numeric", length = node_n)
       copy_num2 <- vector(mode = "numeric", length = node_n)

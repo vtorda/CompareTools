@@ -15,7 +15,9 @@ DolloImport2(tree, files = NULL, partitioning = FALSE, groups = NULL,
 \item{part_name}{}
 }
 \value{
-this function returns a \code{list} object with the following elements: tree, Compare matrices and raw_data. raw data is a matrix with two columns (1 = gains, 2 = losses) and as many rows as many nodes + tips the species tree has. These are aligned.
+this function returns a \code{list} object with the following elements: tree,
+Compare matrices and raw_data. raw data is a matrix with two columns (1 = gains, 2 = losses)
+ and as many rows as many nodes + tips the species tree has. The rows and tree nodes are ligned so the first rows are the tips in order followed by the innernodes
 }
 \description{
 Import data from compare analysis

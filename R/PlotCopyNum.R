@@ -18,7 +18,7 @@ PlotCopyNum <- function(tree, df, stat = c("gains", "losses", "copy_num", "net_g
       warning(paste0("more than one columns called copy_num\nplease provied only one column with a name copy_num\n"))
     }
     switch(sizemeth,
-           standard={ df$nums_trans <- (df[,coln] - min(df[,coln])) / (max(df[,coln] - min(df[,coln]))) },
+           standard={ df$nums_trans <- (df[,coln] - min(df[,coln])) / (max(df[,coln]) - min(df[,coln])) },
            comparable={ df$nums_trans <- (abs(df[,coln]) - min(comp.size)) / (max(max(comp.size) - min(comp.size))) },
            log10sqrt={ df$nums_trans <- log10(sqrt(na.omit(df[,coln]))) },
            log10={ df$nums_trans <- log10(na.omit(df[,coln])) },

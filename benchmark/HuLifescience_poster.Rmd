@@ -1,0 +1,630 @@
+---
+title: "For Poster"
+author: "Torda"
+date: "March 25, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Import data
+
+```{r}
+library(CompareTools)
+library(ape)
+```
+
+```{r}
+tree_path <- "~/Documents/MUNKA/PhD/CompareTools/inst/extdata/71g_species.tree"
+dollo_path <- "~/Documents/MUNKA/PhD/CompareTools/inst/extdata/Dolloout_all_cluster"
+```
+
+First the tree should be imported by an `ape` function
+Then the dollo file can be imported. It is good to ladderize the tree, which can be done inside the function.
+```{r}
+tree <- read.tree(tree_path)
+comp_obj <- DolloImport3(tree = ladderize(tree), files = dollo_path)
+```
+
+# change tip labels
+
+```{r}
+species_df <- read_tsv("~/Documents/MUNKA/PhD/CompareTools/inst/extdata/species_list.txt")
+any(comp_obj$tree$tip.label %in% species_df$Species_Short_Name == FALSE)
+index <- which(comp_obj$tree$tip.label %in% species_df$Species_Short_Name == FALSE)
+comp_obj$tree$tip.label[index]
+index2 <- which(species_df$Species_Short_Name %in% comp_obj$tree$tip.label == FALSE)
+comp_obj$tree$tip.label[index]
+unlist(species_df[index2,2])
+comp_obj$tree$tip.label[index] <- c(unlist(species_df[index2,2]))
+mt_index <- match(comp_obj$tree$tip.label, species_df$Species_Short_Name)
+comp_obj$tree$tip.label <- species_df$Species_Name[mt_index]
+comp_obj$tree$tip.label
+```
+
+
+```{r}
+comp_obj <- GroupComp(compare = comp_obj, event_data = "event_data",
+                      groups = data.frame(cl = colnames(comp_obj$event_data$gains),
+                                          groups = rep("all", ncol(comp_obj$event_data$gains))))
+
+
+```
+
+```{r}
+pdf(file = "sum_all_1.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "standard", comp.size = c(1, max(comp_obj$event_data_GROUPED$CumGain)), size = 18, tip_pch_opt = list(pch = 16, col = "red", adj = c(1, 0.5)))
+dev.off()
+```
+
+```{r}
+pdf(file = "sum_all_2.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "standard", comp.size = c(1, max(comp_obj$event_data_GROUPED$CumGain)), size = 10)
+dev.off()
+```
+
+```{r}
+pdf(file = "sum_all_5.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "comparable", comp.size = c(1, max(comp_obj$event_data_GROUPED$gains)), size = 20, tip_pch_opt = FALSE, tip_text_opt = FALSE)
+dev.off()
+```
+
+```{r}
+pdf(file = "sum_all_6.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "comparable", comp.size = c(1, max(comp_obj$event_data_GROUPED$gains)), size = 25, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(-0.8,0.5), bg = NULL, frame = "none"), labels.offset = 1)
+dev.off()
+```
+
+
+```{r}
+pdf(file = "sum_all_7.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "comparable", comp.size = c(1, max(comp_obj$event_data_GROUPED$gains)), size = 25, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(-0.4,0.1), bg = NULL, frame = "none"), label.offset = 2, edge.width = 5)
+dev.off()
+```
+
+
+
+```{r}
+pdf(file = "sum_all_9.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "comparable", comp.size = c(100, max(comp_obj$event_data_GROUPED$gains)), size = 25, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0,0), bg = NULL, frame = "r"), label.offset = 2, edge.width = 5)
+dev.off()
+```
+
+
+
+
+```{r}
+pdf(file = "sum_all_10.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "comparable", comp.size = c(1000, max(comp_obj$event_data_GROUPED$gains)), size = 25, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = NULL, frame = "r"), label.offset = 2, edge.width = 5)
+dev.off()
+```
+
+```{r}
+makeTransparent<-function(someColor, alpha=100)
+{
+  newColor<-col2rgb(someColor)
+  apply(newColor, 2, function(curcoldata){rgb(red=curcoldata[1], green=curcoldata[2],
+    blue=curcoldata[3],alpha=alpha, maxColorValue=255)})
+}
+
+makeTransparent("grey", 10)
+```
+
+```{r}
+
+pdf(file = "sum_all_11.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "comparable", comp.size = c(1000, max(comp_obj$event_data_GROUPED$gains)), size = 25, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("black", 100), frame = "r"), label.offset = 2, edge.width = 5)
+dev.off()
+```
+
+```{r}
+
+pdf(file = "sum_all_12.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "comparable", comp.size = c(1000, max(comp_obj$event_data_GROUPED$gains)), size = 25, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,-0.8), bg = makeTransparent("deepskyblue", 100), frame = "r"), label.offset = 2, edge.width = 5)
+dev.off()
+```
+
+
+
+```{r}
+
+pdf(file = "sum_all_13.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "comparable", comp.size = c(10000, 1000), size = 25, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,-0.8), bg = makeTransparent("deepskyblue", 100), frame = "r"), label.offset = 2, edge.width = 5)
+dev.off()
+```
+
+
+```{r}
+
+pdf(file = "sum_all_14.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", comp.size = c(10000, 1000), size = 2, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), label.offset = 2, edge.width = 5)
+dev.off()
+```
+
+```{r}
+
+pdf(file = "sum_all_15.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", comp.size = c(10000, 1000), size = 2, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), label.offset = 1, edge.width = 5)
+dev.off()
+```
+
+
+```{r}
+
+pdf(file = "sum_all_16.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", size = 2, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), label.offset = 1, edge.width = 5)
+dev.off()
+```
+
+```{r}
+
+pdf(file = "sum_all_17.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", base = 2, size = 0.5, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), label.offset = 1, edge.width = 5)
+dev.off()
+```
+
+
+```{r}
+
+pdf(file = "sum_all_18.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", base = 20, size = 3, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), label.offset = 1, edge.width = 5)
+dev.off()
+```
+
+
+
+```{r}
+
+pdf(file = "sum_all_19.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", base = 50, size = 4, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), label.offset = 1, edge.width = 5)
+dev.off()
+```
+
+
+```{r}
+
+pdf(file = "sum_all_20.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", base = 100, size = 5, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), label.offset = 1, edge.width = 5)
+dev.off()
+```
+
+
+```{r}
+
+pdf(file = "sum_all_23.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", base = 100, size = 5, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), node_pch_opt = list(pch = 16, col = makeTransparent("red", 200)), label.offset = 1, edge.width = 5)
+dev.off()
+```
+
+
+
+```{r}
+
+pdf(file = "sum_all_24.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", base = 100, size = 4, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), node_pch_opt = list(pch = 16, col = makeTransparent("red", 200)), label.offset = 1, edge.width = 5)
+dev.off()
+```
+
+
+
+```{r}
+
+pdf(file = "sum_all_27.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", base = 100, size = 4, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), node_pch_opt = list(pch = 16, col = makeTransparent("red", 200)), label.offset = 1, edge.width = 5)
+legend("bottomleft", legend = c(10, 100, 1000, 5000), pch = 16, col = makeTransparent("red", 200),
+       cex = 3, pt.cex = (log(c(10, 100, 1000, 5000), 100) * 4))
+dev.off()
+```
+
+
+```{r}
+
+pdf(file = "sum_all_28.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", base = 100, size = 4, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), node_pch_opt = list(pch = 16, col = makeTransparent("red", 200)), label.offset = 1, edge.width = 5)
+legend("bottomleft", legend = c(10, 100, 1000, 5000), pch = 16, col = makeTransparent("red", 200),
+       cex = 1, pt.cex = (log(c(10, 100, 1000, 5000), 100) * 4))
+dev.off()
+```
+
+
+```{r}
+
+pdf(file = "sum_all_29.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", base = 10, size = 1, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), node_pch_opt = list(pch = 16, col = makeTransparent("red", 200)), label.offset = 1, edge.width = 5)
+legend("bottomleft", legend = c(10, 100, 1000, 5000), pch = 16, col = makeTransparent("red", 200),
+       cex = 3, pt.cex = (log(c(10, 100, 1000, 5000), 10) * 1))
+dev.off()
+```
+
+
+```{r}
+
+pdf(file = "sum_all_30.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", base = 10, size = 3, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), node_pch_opt = list(pch = 16, col = makeTransparent("red", 200)), label.offset = 1, edge.width = 5)
+legend("bottomleft", legend = c(10, 100, 1000, 5000), pch = 16, col = makeTransparent("red", 200),
+       cex = 3, pt.cex = (log(c(10, 100, 1000, 5000), 10) * 3))
+dev.off()
+```
+
+
+```{r}
+
+pdf(file = "sum_all_31.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "log", base = 10, size = 2.5, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), node_pch_opt = list(pch = 16, col = makeTransparent("red", 200)), label.offset = 1, edge.width = 5)
+legend("bottomleft", legend = c(10, 100, 1000, 5000), pch = 16, col = makeTransparent("red", 200),
+       cex = 3, pt.cex = (log(c(10, 100, 1000, 5000), 10) * 2.5))
+dev.off()
+```
+
+
+```{r}
+
+pdf(file = "sum_all_32.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = 1, cladogram = TRUE, sizemeth = "standard", base = 10, size = 20, tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), node_pch_opt = list(pch = 16, col = makeTransparent("red", 200)), label.offset = 1, edge.width = 5)
+legend("bottomleft", legend = c(10, 100, 1000, 5000), pch = 16, col = makeTransparent("red", 200),
+       cex = 3, pt.cex = (log(c(10, 100, 1000, 5000), 10) * 20))
+dev.off()
+```
+
+# group clusters
+
+```{r}
+dendro <- HclustComp(compare = comp_obj$event_data$gains)
+save(dendro, file = "./dendro.RData")
+```
+
+```{r}
+cl_groups <- CutDendroComp(dendro = dendro, n_groups = 30, plot = TRUE, min_num = 20)
+```
+
+```{r}
+pdf(file = "dendro_1.pdf", width = 40, height = 20)
+CutDendroComp(dendro = dendro, n_groups = 30, plot = TRUE, min_num = 20)
+dev.off()
+```
+
+
+```{r}
+pdf(file = "dendro_2.pdf", width = 40, height = 20)
+CutDendroComp(dendro = dendro, n_groups = 30, plot = TRUE, min_num = 20, labels = FALSE)
+dev.off()
+```
+
+
+```{r}
+cl_groups <- CutDendroComp(dendro = dendro, n_groups = 30, plot = FALSE, min_num = 20)
+comp_obj2 <- GroupComp(compare = comp_obj, groups = cl_groups, event_data = "event_data")
+comp_obj2 <- comp_obj2[-3]
+```
+
+
+
+```{r fig.width=20, fig.height=12}
+
+PlotEvent(compare = comp_obj2, dataset = "event_data_GROUPED", stat = "gains", data = 1:13, cladogram = TRUE, sizemeth = "log", base = 10, size = 4, comp.size = c(0,7000), tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), node_pch_opt = list(pch = 16, col = makeTransparent("red", 200)), label.offset = 1, edge.width = 5)
+
+```
+
+
+```{r}
+v <- cl_groups$groups
+names(v) <- cl_groups$clusters
+table(v)
+```
+
+
+
+```{r}
+pdf(file = "groups_all_1.pdf", width = 24, height = 24)
+PlotEvent(compare = comp_obj2, dataset = "event_data_GROUPED", stat = "gains", data = 1:13, cladogram = TRUE, sizemeth = "log", base = 10, size = 4, comp.size = c(0,7000), tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), node_pch_opt = list(pch = 16, col = makeTransparent("red", 200)), label.offset = 1, edge.width = 5)
+dev.off()
+```
+
+
+## mi van ha tobb csoportra nyomom?
+
+
+
+```{r}
+cl_groups <- CutDendroComp(dendro = dendro, n_groups = 70, plot = TRUE, min_num = 20)
+comp_obj2 <- GroupComp(compare = comp_obj, groups = cl_groups, event_data = "event_data")
+comp_obj2 <- comp_obj2[-3]
+```
+```{r}
+pdf(file = "dendro_3.pdf", width = 40, height = 20)
+CutDendroComp(dendro = dendro, n_groups = 70, plot = TRUE, min_num = 20, labels = FALSE)
+dev.off()
+```
+
+
+
+```{r fig.width=20, fig.height=12}
+
+PlotEvent(compare = comp_obj2, dataset = "event_data_GROUPED", stat = "gains", data = 1:21, cladogram = TRUE, sizemeth = "log", base = 10, size = 4, comp.size = c(0,7000), tip_pch_opt = FALSE, tip_text_opt = FALSE, node_text_opt = list(adj = c(0.5,0.5), bg = makeTransparent("grey", 100), frame = "n"), node_pch_opt = list(pch = 16, col = makeTransparent("red", 200)), label.offset = 1, edge.width = 5)
+
+```
+
+
+```{r}
+A <- GetNodes(comp_obj2, c("Rozella allomycis", "Laccaria bicolor"), tips = FALSE)
+all_n <- c(1:141) 
+all_n2 <- all_n[!all_n %in% A]
+all_n3 <- all_n2[!all_n2 %in% 1:71]
+plot.phylo(comp_obj2$tree)
+nodelabels(node = all_n3, pch = 16, col = "blue")
+aov_groups <- c(A, all_n3)
+names(aov_groups) <- c(rep("Fungi", length(A)), rep("Animals_Protists", length(all_n3)))
+RandomAovTest(comp_obj2, dataset = "event_data_GROUPED", "gains", aov_groups = aov_groups, 100)
+```
+
+```{r}
+comp_obj3 <- SliceComp(compare = comp_obj, clusters = cl_groups$clusters[as.character(cl_groups$groups) %in% "7"])
+seventh_cl <- RandomAovTest(comp_obj3, dataset = "event_data_SLICED", "gains", aov_groups = aov_groups, 100)
+```
+
+```{r}
+
+B <- GetNodes(comp_obj2, c("Schizosaccharomyces pombe", "Laccaria bicolor"), tips = FALSE)
+LowerFungi <- A[!A %in% B]
+aov_groups <- c(B, LowerFungi, all_n3)
+names(aov_groups) <- c(rep("HigherFungi", length(B)), rep("LowerFungi", length(LowerFungi)),
+                                                          rep("Animals_Protists", length(all_n3)))
+plot.phylo(comp_obj2$tree)
+nodelabels(node = aov_groups, pch = 16, col = c(rep("blue", length(B)),rep("red", length(LowerFungi)),
+                                                rep("green", length(all_n3))))
+
+```
+```{r}
+RandomAovTest(comp_obj2, dataset = "event_data_GROUPED", "gains", aov_groups = aov_groups, 100)
+```
+```{r}
+seventh_cl <- RandomAovTest(comp_obj3, dataset = "event_data_SLICED", "gains", aov_groups = aov_groups, 100)
+```
+
+```{r}
+A <- GetNodes(comp_obj2, c("Rozella allomycis", "Laccaria bicolor"), tips = FALSE)
+all_n <- c(1:141) 
+all_n2 <- all_n[!all_n %in% A]
+all_n3 <- all_n2[!all_n2 %in% 1:71]
+
+aov_groups <- c(A, all_n3)
+names(aov_groups) <- c(rep("Fungi", length(A)), rep("Animals_Protists", length(all_n3)))
+all_cl <- RandomAovTest(comp_obj, dataset = "event_data", "gains", aov_groups = aov_groups, 100)
+```
+
+```{r}
+head(all_cl)
+head(all_cl[,5] < 0.05)
+index <- all_cl[,5] < 0.05
+sum(index, na.rm = TRUE)
+index2 <- which(index == TRUE)
+sig_clusters <- all_cl[index2,]
+sig_cl_names <- rownames(sig_clusters)
+comp_obj_sign <- SliceComp(compare = comp_obj, clusters = sig_cl_names, new_name_suf = "all_sig", overwrite = FALSE)
+```
+
+```{r}
+# divide to clades
+
+animal_nodes <- aov_groups[names(aov_groups) %in% "Animals_Protists"]
+animal_gains <- comp_obj_sign$event_data_all_sig$gains[animal_nodes,]
+fungi_nodes <- aov_groups[names(aov_groups) %in% "Fungi"]
+fungi_gains <- comp_obj_sign$event_data_all_sig$gains[fungi_nodes,]
+bigger_fun <- vector()
+for(i in 1:ncol(animal_gains)){
+  fun_mean <- mean(fungi_gains[,i])
+  animal_mean <- mean(animal_gains[,i])
+  bigger_fun[i] <- fun_mean > animal_mean
+}
+sum(bigger_fun)
+```
+hat a rootot lehet hogy ki kene zarni...
+
+```{r}
+root <- getMRCA(comp_obj$tree, comp_obj$tree$tip.label)
+animal_nodes2 <- animal_nodes[-1]
+
+
+animal_gains <- comp_obj_sign$event_data_all_sig$gains[animal_nodes2,]
+fungi_nodes <- aov_groups[names(aov_groups) %in% "Fungi"]
+fungi_gains <- comp_obj_sign$event_data_all_sig$gains[fungi_nodes,]
+bigger_fun <- vector()
+for(i in 1:ncol(animal_gains)){
+  fun_mean <- mean(fungi_gains[,i])
+  animal_mean <- mean(animal_gains[,i])
+  bigger_fun[i] <- fun_mean > animal_mean
+}
+sum(bigger_fun)
+which(bigger_fun == TRUE)
+```
+
+```{r}
+bigger_fungi_animal <- animal_gains[,which(bigger_fun == TRUE)]
+bigger_fungi_fungi <- fungi_gains[,which(bigger_fun == TRUE)]
+ncol(fungi_gains)
+ncol(animal_gains)
+fun_mean <- vector()
+animal_mean <- vector()
+for(i in 1:ncol(bigger_fungi_animal)){
+  fun_mean[i] <- mean(bigger_fungi_animal[,i])
+  animal_mean[i] <- mean(bigger_fungi_fungi[,i])
+}
+bigger_fun_data <- data.frame(means = c(fun_mean, animal_mean), groups = c(rep("Fungi", length(fun_mean)), rep("Animals&Protists", length(animal_mean))))
+
+library(ggplot2)
+
+ggplot(bigger_fun_data, aes(x = groups, y = means)) +
+  geom_boxplot()
+
+
+bigger_fungi_animal <- animal_gains[,which(bigger_fun == FALSE)]
+bigger_fungi_fungi <- fungi_gains[,which(bigger_fun == FALSE)]
+fun_mean <- vector()
+animal_mean <- vector()
+for(i in 1:ncol(bigger_fungi_animal)){
+  fun_mean[i] <- mean(bigger_fungi_animal[,i])
+  animal_mean[i] <- mean(bigger_fungi_fungi[,i])
+}
+bigger_fun_data <- data.frame(means = c(fun_mean, animal_mean), groups = c(rep("Fungi", length(fun_mean)), rep("Animals&Protists", length(animal_mean))))
+
+
+ggplot(bigger_fun_data, aes(x = groups, y = means)) +
+  geom_boxplot()
+
+
+
+
+
+```
+
+```{r}
+comp_obj_3_7 <- SliceComp(compare = comp_obj, clusters = cl_groups$clusters[cl_groups$groups %in% c(3,7)], new_name_suf = "three_seven")
+
+
+animal_nodes <- aov_groups[names(aov_groups) %in% "Animals_Protists"]
+animal_gains <- comp_obj_3_7$event_data_three_seven$gains[animal_nodes,]
+fungi_nodes <- aov_groups[names(aov_groups) %in% "Fungi"]
+fungi_gains <- comp_obj_3_7$event_data_three_seven$gains[fungi_nodes,]
+animal_nodes2 <- animal_nodes[-1]
+animal_gains <- comp_obj_3_7$event_data_three_seven$gains[animal_nodes2,]
+
+
+bigger_fun <- vector()
+for(i in 1:ncol(animal_gains)){
+  fun_mean <- mean(fungi_gains[,i])
+  animal_mean <- mean(animal_gains[,i])
+  bigger_fun[i] <- fun_mean > animal_mean
+}
+
+sum(bigger_fun)
+which(bigger_fun == TRUE)
+```
+
+```{r}
+
+bigger_fungi_animal <- animal_gains[,which(bigger_fun == TRUE)]
+bigger_fungi_fungi <- fungi_gains[,which(bigger_fun == TRUE)]
+fun_mean <- vector()
+animal_mean <- vector()
+for(i in 1:ncol(bigger_fungi_animal)){
+  fun_mean[i] <- mean(bigger_fungi_animal[,i])
+  animal_mean[i] <- mean(bigger_fungi_fungi[,i])
+}
+bigger_fun_data <- data.frame(means = c(fun_mean, animal_mean), groups = c(rep("Fungi", length(fun_mean)), rep("Animals&Protists", length(animal_mean))))
+
+
+ggplot(bigger_fun_data, aes(x = groups, y = means)) +
+  geom_boxplot(outlier.shape = NA)
+```
+
+```{r}
+p1 <- ggplot(bigger_fun_data, aes(x = groups, y = means)) +
+  geom_boxplot(outlier.shape = NA) 
+ylim1 <- boxplot.stats(bigger_fun_data$means)$stats[c(1, 5)]
+p2 <- p1 + coord_cartesian(ylim = ylim1*2)
+p2
+```
+
+```{r}
+p1 <- ggplot(bigger_fun_data, aes(x = groups, y = means)) +
+  geom_boxplot(outlier.shape = NA) + 
+  geom_jitter(width = 0.1)
+ylim1 <- boxplot.stats(bigger_fun_data$means)$stats[c(1, 5)]
+p2 <- p1 + coord_cartesian(ylim = ylim1*2)
+p2
+```
+
+```{r}
+
+bigger_fungi_animal <- animal_gains[,which(bigger_fun == FALSE)]
+bigger_fungi_fungi <- fungi_gains[,which(bigger_fun == FALSE)]
+fun_mean <- vector()
+animal_mean <- vector()
+for(i in 1:ncol(bigger_fungi_animal)){
+  fun_mean[i] <- mean(bigger_fungi_animal[,i])
+  animal_mean[i] <- mean(bigger_fungi_fungi[,i])
+}
+bigger_fun_data <- data.frame(means = c(fun_mean, animal_mean), groups = c(rep("Fungi", length(fun_mean)), rep("Animals&Protists", length(animal_mean))))
+p1 <- ggplot(bigger_fun_data, aes(x = groups, y = means)) +
+  geom_boxplot(outlier.shape = NA) + 
+  geom_jitter(width = 0.05, aes(col = groups), alpha = 0.7)
+ylim1 <- c(0,0,6)
+p2 <- p1 + coord_cartesian(ylim = ylim1*0.7)
+p2
+```
+```{r}
+pdf(file = "boxplot3.pdf")
+p2
+dev.off()
+```
+
+```{r}
+bigger_fungi_animal <- animal_gains[,which(bigger_fun == TRUE)]
+bigger_fungi_fungi <- fungi_gains[,which(bigger_fun == TRUE)]
+fun_mean <- vector()
+animal_mean <- vector()
+for(i in 1:ncol(bigger_fungi_animal)){
+  fun_mean[i] <- mean(bigger_fungi_animal[,i])
+  animal_mean[i] <- mean(bigger_fungi_fungi[,i])
+}
+bigger_fun_data <- data.frame(means = c(fun_mean, animal_mean), groups = c(rep("Fungi", length(fun_mean)), rep("Animals&Protists", length(animal_mean))))
+
+
+p1 <- ggplot(bigger_fun_data, aes(x = groups, y = means)) +
+  geom_boxplot(outlier.shape = NA) + 
+  geom_jitter(width = 0.05, aes(col = groups), alpha = 0.7)
+ylim1 <- boxplot.stats(bigger_fun_data$means)$stats[c(1, 5)]
+p2 <- p1 + coord_cartesian(ylim = ylim1*2)
+p2
+
+pdf(file = "boxplot4.pdf")
+p2
+dev.off()
+```
+
+
+```{r}
+save(comp_obj, file = "comp_obj.RData")
+```
+
+```{r}
+load("~/Documents/MUNKA/PhD/CompareTools/benchmark/all_aov_test.RData")
+sum()
+```
+
+
+```{r}
+head(all_cl)
+head(all_cl[,5] < 0.05)
+index <- all_cl[,5] < 0.05
+sum(index, na.rm = TRUE)
+index2 <- which(index == TRUE)
+length(index2)
+sig_clusters <- all_cl[index2,]
+sig_cl_names <- rownames(sig_clusters)
+comp_obj_sign <- SliceComp(compare = comp_obj, clusters = sig_cl_names, new_name_suf = "all_sig", overwrite = FALSE)
+```
+
+```{r}
+# divide to clades
+
+animal_nodes <- aov_groups[names(aov_groups) %in% "Animals_Protists"]
+animal_gains <- comp_obj_sign$event_data_all_sig$gains[animal_nodes,]
+fungi_nodes <- aov_groups[names(aov_groups) %in% "Fungi"]
+fungi_gains <- comp_obj_sign$event_data_all_sig$gains[fungi_nodes,]
+bigger_fun <- vector()
+for(i in 1:ncol(animal_gains)){
+  fun_mean <- mean(fungi_gains[,i])
+  animal_mean <- mean(animal_gains[,i])
+  bigger_fun[i] <- fun_mean > animal_mean
+}
+sum(bigger_fun)
+```
+
+```{r}
+
+```
+

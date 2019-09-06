@@ -1,0 +1,207 @@
+---
+title: "CompareTools_Demo1"
+author: "Torda"
+date: "March 21, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Import data
+
+```{r}
+library(CompareTools)
+library(ape)
+```
+
+```{r}
+tree_path <- "~/Documents/MUNKA/PhD/CompareTools/inst/extdata/71g_species.tree"
+dollo_path <- "~/Documents/MUNKA/PhD/CompareTools/inst/extdata/Dolloout_all_cluster"
+```
+
+First the tree should be imported by an `ape` function
+Then the dollo file can be imported. It is good to ladderize the tree, which can be done inside the function.
+```{r}
+tree <- read.tree(tree_path)
+comp_obj <- DolloImport3(tree = ladderize(tree), files = dollo_path)
+```
+
+## Compare object data structure
+
+As you can see the compare object is a list
+
+```{r}
+str(comp_obj)
+```
+
+It has two fixed element: the first which contains the tree as class `phylo`, and the last, `raw_data` where a compact but structured data of the dollo file can be found. Between the first and the last element any number of new element can be found depending on the user. These element should contains matrices with event data: gene gains, losses and other derived statistics of them. Thre structure of these matrices and that of raw_data follow the structure of the species tree, so the row numbers corresponing to the node numbers.
+
+As you can see the species tree contains 71 species, and the event data contains 34,032 clusters
+
+```{r}
+length(comp_obj$tree$tip.label)
+ncol(comp_obj$event_data$gains)
+```
+
+
+# Modify data
+
+Once you imported the dollo file into a compare object you can  carry out some modifications
+
+## Slice the data
+
+it is possible that you want to focus only just a portion of clusters. In this case you can select, so slice the matrice of any event data
+
+```{r}
+# lets select the first 1000 clusters
+cluster_names <- colnames(comp_obj$event_data$gains)[1:1000]
+# select overwrite = FALSE to create a new event data, with the new_name_suf you can set a suffix the put after the original name of the event data. If you set overwrite to TRUE, the original event_data will be overwritten.
+comp_obj <- SliceComp(compare = comp_obj, data = "event_data", clusters = cluster_names, overwrite = FALSE, new_name_suf = "SLICED")
+str(comp_obj)
+```
+As you can see a new element appeared after the original event_data: event_data_SLICED which contains only 1000 elements.
+
+## Transform event data
+
+You may want to examine others than gene gains and losses. So far some predefined option is exist to derive other values from gains and losses, but later any user defined formule hopefully will be possible.
+
+you can calculate the cummulative gains, losses, netto gains and netto cummulative gains.
+
+```{r}
+comp_obj <- TransformComp(compare = comp_obj, builtin = "CumGain")
+str(comp_obj)
+```
+
+You can notice that now every event data has a new element: CumGain.
+
+## Group clusters
+
+You can examine the patters of multiple clusters as a whole, thats why you can group together clusters
+
+To group clusters you will need a `data.frame` which has two columns: first contains names of clusters the second contains the names of groups. 
+
+Lets create two groups of the event_data_SLICED element
+```{r}
+group_df <- data.frame(cl = colnames(comp_obj$event_data_SLICED$gains), groups = c(rep(1, 500), rep(2, 500)))
+comp_obj <- GroupComp(compare = comp_obj, event_data = "event_data_SLICED", groups = group_df)
+```
+
+Now the `comp_obj` has bacame longer with one element: event_data_SLICED_GROUPED
+
+```{r}
+str(comp_obj)
+```
+
+As you can see this event data contains the same event (statistics) as the original event_data_SLICED, but every matrices have only two columns, with the name 1 and 2, refering to the predefined group names.
+
+```{r}
+ncol(comp_obj$event_data_SLICED_GROUPED$gains)
+colnames(comp_obj$event_data_SLICED_GROUPED$gains)
+```
+
+# Visualise data
+
+You can plot the species tree with the depicting the values of different events/statistics
+
+First lets group together all the clusters so a background pattern can be visuallise
+
+```{r}
+comp_obj <- GroupComp(compare = comp_obj, event_data = "event_data",
+                      groups = data.frame(cl = colnames(comp_obj$event_data$gains),
+                                          groups = rep("all", ncol(comp_obj$event_data$gains))))
+```
+
+
+```{r}
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "CumGain", data = "all", cladogram = TRUE, sizemeth = "standard")
+```
+
+It needs some polish:
+
+```{r}
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "CumGain", data = "all", cladogram = TRUE, sizemeth = "standard", comp.size = c(1, max(comp_obj$event_data_GROUPED$CumGain)), size = 4, tip_pch_opt = list(pch = 16, col = "red", adj = c(1, 0.5)), show.tip.label = FALSE)
+```
+
+OK it needs to be optimized and add some new arguments but now it can do the basic things.
+
+# Alternaive grouping of cluster: find clusters of clusters
+
+If the user have no idea about the structure or the nature of the data, a hierachical clustering can be performed on the event data.
+
+The original idea was to perform pair-wise correlation between clusters and from these data a distance matrix can be created which can be inputed to the hclust function. Unfortunately on huge data the original hclust needs extreme amount of memory and cpu power so I found an alternative function which only can handle builtin distance functions which means I can't input correlation based distance matrix...yet..But an eucledian distance can give similar results to correlation based disatances.
+
+So lets perform hierachical clustering with eucledian distances and ward2 clustering methods
+
+```{r}
+dendro <- HclustComp(compare = comp_obj$event_data$CumGain)
+```
+
+This function creates a hclust class oobject so we can plot it and cut two several pieces getting groups of clusteres
+
+```{r}
+#save(list = ls(), file = "~/Documents/MUNKA/PhD/CompareTools/benchmark/Demo1.RData")
+cl_groups <- CutDendroComp(dendro = dendro, n_groups = 30, plot = TRUE)
+```
+
+
+It seems that some of the groups of clusters are realy small... so we can merege them together. Lets say merge every group which contains less then 20 clusters. now we can assign the result of this function to an object which will be a data.frame. This data.frame can be directly input to the GroupComp function.
+
+```{r}
+cl_groups <- CutDendroComp(dendro = dendro, n_groups = 30, plot = TRUE, min_num = 20)
+```
+
+lets group clusters according this clustering:
+
+```{r}
+comp_obj2 <- GroupComp(compare = comp_obj, groups = cl_groups, event_data = "event_data")
+comp_obj2 <- comp_obj2[-5]
+```
+
+```{r fig.width=20, fig.height=12}
+PlotEvent(compare = comp_obj2, dataset = "event_data_GROUPED", stat = "CumGain", data = 1:12, cladogram = TRUE, sizemeth = "standard", comp.size = c(1, 1000), size = 4, tip_pch_opt = list(pch = 16, col = "red", adj = c(1, 0.5)), show.tip.label = TRUE,  label.offset = 5)
+```
+
+```{r}
+groups <- cl_groups$groups
+names(groups) <- cl_groups$clusters
+table(groups)
+```
+
+```{r}
+PlotEvent(compare = comp_obj2, dataset = "event_data_GROUPED", stat = "CumGain", data = 1, cladogram = TRUE, sizemeth = "standard", comp.size = c(1, 1000), size = 4, tip_pch_opt = list(pch = 16, col = "red", adj = c(1, 0.5)), node_text_opt = FALSE, show.tip.label = TRUE,  label.offset = 5)
+```
+
+```{r}
+node_text_opt <- list()
+if(is.logical(node_text_opt)){if(!node_text_opt)node_text_opt}
+```
+
+```{r}
+PlotEvent(compare = comp_obj2, dataset = "event_data_GROUPED", stat = "CumGain", data = 1, cladogram = TRUE, sizemeth = "standard", comp.size = c(1, 1000), size = 4, tip_pch_opt = list(pch = 16, col = "red", adj = c(1, 0.5)), node_text_opt = FALSE, show.tip.label = TRUE,  label.offset = 5)
+identify(comp_obj2$tree, nodes = TRUE, tips = TRUE,
+                  labels = FALSE, quiet = FALSE)
+```
+
+```{r}
+n <- GetNodes(comp_obj2, c("Sporo1", "Lacbi2"))
+plot.phylo(comp_obj2$tree)
+nodelabels(node = n, pch = 16, col = "blue")
+n <- GetNodes(comp_obj2, c("Sporo1", "Lacbi2"), tips = FALSE)
+plot.phylo(comp_obj2$tree)
+nodelabels(node = n, pch = 16, col = "blue")
+```
+
+```{r}
+A <- GetNodes(comp_obj2, c("Sporo1", "Lacbi2"), tips = FALSE)
+B <- GetNodes(comp_obj2, c("Schpo1", "Neucr2"), tips = FALSE)
+aov_groups <- c(A, B)
+names(aov_groups) <- c(rep("A", length(A)), rep("B", length(B)))
+```
+
+
+```{r}
+PlotEvent(compare = comp_obj, dataset = "event_data_GROUPED", stat = "gains", data = "all", cladogram = TRUE, sizemeth = "standard", comp.size = c(1, 1000), size = 6, tip_pch_opt = list(pch = 16, col = "red", adj = c(1, 0.5)))
+```
+

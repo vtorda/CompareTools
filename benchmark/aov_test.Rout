@@ -1,0 +1,34 @@
+
+R version 3.4.4 (2018-03-15) -- "Someone to Lean On"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> load("~/Documents/MUNKA/PhD/CompareTools/benchmark/comp_obj.RData")
+> library(CompareTools)
+> A <- GetNodes(comp_obj, c("Rozella allomycis", "Laccaria bicolor"), tips = FALSE)
+> all_n <- c(1:141)
+> all_n2 <- all_n[!all_n %in% A]
+> all_n3 <- all_n2[!all_n2 %in% 1:71]
+> all_n3 <- all_n3[-1]
+> aov_groups <- c(A, all_n3)
+> names(aov_groups) <- c(rep("Fungi", length(A)), rep("Animals_Protists", length(all_n3)))
+> all_cl <- RandomAovTest(comp_obj, dataset = "event_data", "gains", aov_groups = aov_groups, 100)
+> save(all_cl, file = "all_aov_test.RData")
+> 
+> proc.time()
+    user   system  elapsed 
+3443.520    0.287 3444.217 

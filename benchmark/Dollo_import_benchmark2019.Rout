@@ -1,0 +1,47 @@
+
+R version 3.4.4 (2018-03-15) -- "Someone to Lean On"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(CompareTools)
+> library(ape)
+> library(microbenchmark)
+> file_path <- "~/Documents/MUNKA/PhD/CompareTools/inst/extdata/Dollogeneratum/"
+> treefiles <- list.files(file_path, pattern = "^Tree")
+> treefiles <- treefiles[-4]
+> dollofiles <- list.files("~/Documents/MUNKA/PhD/CompareTools/inst/extdata/Dollogeneratum/", pattern = "^dollo")
+> reorder_index <- c(12,13,14,15,8,9,10,11,4,5,6,7,1,2,3)
+> treefiles <- treefiles[reorder_index]
+> dollofiles <- dollofiles[reorder_index]
+> for(i in 1:15){
++   cat(i, "\t", dollofiles[i], "\n")
++   tree <- read.tree(paste0(file_path, treefiles[i]))
++   file <- paste0(file_path, dollofiles[i])
++   start_memory <- gc(reset = TRUE)
++   micro_log <- microbenchmark(DolloImport3(tree = tree, files = file), times = 1)
++   end_memory <- gc()
++   save(list = c("start_memory", "end_memory", "micro_log"), file = paste0(file_path, "benchmark_", dollofiles[i], ".RData"))
++ }
+1 	 dollo_T10_C1000 
+2 	 dollo_T10_C10000 
+3 	 dollo_T10_C1e+05 
+4 	 dollo_T10_C1e+06 
+5 	 dollo_T100_C1000 
+Error in `[<-`(`*tmp*`, rng, lcols[[i]], value = matrices[[i]]) : 
+  subscript out of bounds
+Calls: microbenchmark ... list_to_dataframe -> as.data.frame -> rbind.fill.matrix
+Execution halted

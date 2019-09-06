@@ -1,0 +1,58 @@
+---
+title: "PlotEvents_2019"
+author: "Torda"
+date: "February 28, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(ape)
+library(plyr)
+library(tidyr)
+library(stringr)
+library(readr)
+library(profvis)
+library(microbenchmark)
+```
+
+```{r}
+file_path <- system.file("extdata", "Dolloout", package = "CompareTools")
+files <- file_path
+tree_path <- system.file("extdata", "71g_species.tree", package = "CompareTools")
+tree <- read.tree(tree_path)
+group_path <- system.file("extdata", "groups.txt", package = "CompareTools")
+groups <- group_path
+Compare <- DolloImport2(tree = tree, partitioning = FALSE, files = files, part_name = "every")
+Compare <- retrieve_event2(Compare, partitioning = TRUE, groups = groups, part_name = "grouped")
+```
+
+```{r}
+which(names(Compare) %in% "every")
+
+```
+
+
+```{r}
+class(unlist(Compare$every))
+typeof(unlist(Compare$every))
+inherits(Compare$every$all_cluster, "numeric")
+is.matrix(Compare[[2]][[1]])
+as.data.frame(Compare[[2]][[1]])
+set <- c("b", "b", "c")
+is.character(set)
+
+d <- Compare[[3]][1:1]
+raw <- Compare$raw_data
+length(Compare[[2]])
+```
+
+
+```{r}
+PlotEvent(compare = Compare, anlys = "every", set = 1, stat = "cum_gains", sizemeth = "standard")
+```
+
