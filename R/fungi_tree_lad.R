@@ -15,6 +15,6 @@
 #'
 #'
 #' @examples
-#' data(fungi_tree_lad)
-#' plot.phylo(fungi_tree_lad)
+# data(fungi_tree_lad)
+# plot.phylo(fungi_tree_lad)
 "fungi_tree_lad"

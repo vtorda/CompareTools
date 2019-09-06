@@ -20,23 +20,5 @@ this function returns \code{phylo} object which is ladderized with new tip label
 ladderizing a phylo object by not just indexing but reordering the tip labels
 }
 \examples{
-tree <- rtree(15)
-plot.phylo(tree)
-tree_lad_ape <- ladderize(tree, right = FALSE)
-plot.phylo(tree_lad_ape)
-#comparing the object structures: edge matris has changed but not the tip.label order
-identical(tree, tree_lad_ape)
-identical(tree$tip.label, tree_lad_ape$tip.label)
-tree_lad_compare <- LadderizeTree(tree)
-plot.phylo(tree_lad_ape, main = "ape function")
-plot.phylo(tree_lad_compare, main = "modified ape function")
-identical(tree_lad_ape, tree_lad_compare)
-identical(tree_lad_ape$tip.label, tree_lad_compare$tip.label)
-# now the tip label order will represent the order you see on the plot
-}
-\seealso{
-\link[ape]{ladderize}
-}
-\author{
-Torda Varga
+
 }

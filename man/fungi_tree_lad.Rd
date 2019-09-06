@@ -12,10 +12,6 @@ data(fungi_tree_lad)
 The tree contains 71 species mainly from the Kingdom Fungi, but from other lineages as well.
 This tree is the ladderized form of fungi_tree
 }
-\examples{
-data(fungi_tree_lad)
-plot.phylo(fungi_tree_lad)
-}
 \references{
 Kiss et al.
 }

@@ -11,10 +11,6 @@ data(fungi_tree)
 \description{
 The tree contains 71 species mainly from the Kingdom Fungi, but from other lineages as well.
 }
-\examples{
-data(fungi_tree)
-plot.phylo(fungi_tree)
-}
 \references{
 Kiss et al.
 }
