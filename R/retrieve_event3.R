@@ -43,8 +43,10 @@ retrieve_event3 <- function(compare,  new_object = FALSE){
 
   Gxx <- ldply(all_nodeg_sep, rbind) %>% replace(is.na(.), 0)
   Gxx <- as.matrix(Gxx[-(node_n+1),])
+  Gxx <- Gxx[,order(colnames(Gxx))]
   Lxx <-ldply(all_nodel_sep,rbind) %>% replace(is.na(.), 0)
   Lxx <- as.matrix(Lxx[-(node_n+1),])
+  Lxx <- Lxx[,order(colnames(Lxx))]
   all_cl_sep <- list(Gxx, Lxx)
   names(all_cl_sep) <- c("gains", "losses")
   if(new_object){
